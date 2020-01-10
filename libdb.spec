@@ -4,7 +4,7 @@
 Summary: The Berkeley DB database library for C
 Name: libdb
 Version: 5.3.21
-Release: 20%{?dist}
+Release: 21%{?dist}
 Source0: http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 Source1: http://download.oracle.com/berkeley-db/db.1.85.tar.gz
 # libdb man pages generated from the 5.3.21 documentation
@@ -29,6 +29,9 @@ Patch27: libdb-cbd-race.patch
 # Limit concurrency to max 1024 CPUs
 Patch28: libdb-limit-cpu.patch
 Patch29: libdb-5.3.21-mutex_leak.patch
+# Patch sent upstream
+Patch30: checkpoint-opd-deadlock.patch
+
 URL: http://www.oracle.com/database/berkeley-db/
 License: BSD and LGPLv2 and Sleepycat
 Group: System Environment/Libraries
@@ -228,10 +231,11 @@ popd
 %patch24 -p1 -b .4.5.20.jni
 %patch25 -p1 -b .licensefix
 
-%patch26 -p1 -b .overflow
-%patch27 -p1 -b .cbdrace
-%patch28 -p1 -b .cpu-limit
-%patch29 -p1 -b .mutex-leak
+%patch26 -p1
+%patch27 -p1
+%patch28 -p1
+%patch29 -p1
+%patch30 -p1
 
 cd dist
 ./s_config
@@ -443,6 +447,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdb_java.so
 
 %changelog
+* Mon Dec 18 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-21
+- Fix deadlocks when reading/writing off-page duplicate tree (#1526929)
+
 * Mon Mar 20 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-20
 - Add man pages for libdb-utils (#1395665)
 
