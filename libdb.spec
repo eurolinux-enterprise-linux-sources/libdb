@@ -4,7 +4,7 @@
 Summary: The Berkeley DB database library for C
 Name: libdb
 Version: 5.3.21
-Release: 24%{?dist}
+Release: 25%{?dist}
 Source0: http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 Source1: http://download.oracle.com/berkeley-db/db.1.85.tar.gz
 # libdb man pages generated from the 5.3.21 documentation
@@ -35,6 +35,9 @@ Patch30: libdb-5.3.21-region-size-check.patch
 Patch31: checkpoint-opd-deadlock.patch
 
 Patch32: libdb-db_hotbackup-manpages.patch
+# rhbz#1608749 Patch sent upstream
+# Expects libdb-5.3.21-mutex_leak.patch applied
+Patch33: libdb-5.3.21-trickle_cpu.patch
 
 URL: http://www.oracle.com/database/berkeley-db/
 License: BSD and LGPLv2 and Sleepycat
@@ -242,6 +245,7 @@ popd
 %patch30 -p1
 %patch31 -p1
 %patch32 -p1
+%patch33 -p1
 
 cd dist
 ./s_config
@@ -453,6 +457,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdb_java.so
 
 %changelog
+* Wed Jan 30 2019 Petr Kubat <pkubat@redhat.com> 5.3.21-25
+- Optimize trickle thread CPU usage (#1608749)
+
 * Thu Jan 11 2018 Matej Mužila <mmuzila@redhat.com> - 5.3.21-24
 - Link db_dump185 with %{__global_ldflags}. Resolves: rhbz#1460077
 
