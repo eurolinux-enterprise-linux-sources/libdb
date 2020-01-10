@@ -4,7 +4,7 @@
 Summary: The Berkeley DB database library for C
 Name: libdb
 Version: 5.3.21
-Release: 21%{?dist}
+Release: 24%{?dist}
 Source0: http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 Source1: http://download.oracle.com/berkeley-db/db.1.85.tar.gz
 # libdb man pages generated from the 5.3.21 documentation
@@ -29,8 +29,12 @@ Patch27: libdb-cbd-race.patch
 # Limit concurrency to max 1024 CPUs
 Patch28: libdb-limit-cpu.patch
 Patch29: libdb-5.3.21-mutex_leak.patch
+# Upstream acknowledged and agreed to use it
+Patch30: libdb-5.3.21-region-size-check.patch
 # Patch sent upstream
-Patch30: checkpoint-opd-deadlock.patch
+Patch31: checkpoint-opd-deadlock.patch
+
+Patch32: libdb-db_hotbackup-manpages.patch
 
 URL: http://www.oracle.com/database/berkeley-db/
 License: BSD and LGPLv2 and Sleepycat
@@ -216,26 +220,28 @@ for building programs which use the Berkeley DB in Java.
 %setup -q -n db-%{version} -a 1
 tar -xf %{SOURCE2}
 
-%patch0 -p1 -b .multiarch
+%patch0 -p1
 pushd db.1.85/PORT/linux
-%patch10 -p0 -b .1.1
+%patch10 -p0
 popd
 pushd db.1.85
-%patch11 -p0 -b .1.2
-%patch12 -p0 -b .1.3
-%patch13 -p0 -b .1.4
-%patch20 -p1 -b .errno
+%patch11 -p0
+%patch12 -p0
+%patch13 -p0
+%patch20 -p1
 popd
 
-%patch22 -p1 -b .185compat
-%patch24 -p1 -b .4.5.20.jni
-%patch25 -p1 -b .licensefix
+%patch22 -p1
+%patch24 -p1
+%patch25 -p1
 
 %patch26 -p1
 %patch27 -p1
 %patch28 -p1
 %patch29 -p1
 %patch30 -p1
+%patch31 -p1
+%patch32 -p1
 
 cd dist
 ./s_config
@@ -251,7 +257,7 @@ make -C db.1.85/PORT/%{_os} OORG="$CFLAGS"
 test -d dist/dist-tls || mkdir dist/dist-tls
 # Static link db_dump185 with old db-185 libraries.
 /bin/sh libtool --tag=CC --mode=compile	%{__cc} $RPM_OPT_FLAGS -Idb.1.85/PORT/%{_os}/include -D_REENTRANT -c util/db_dump185.c -o dist/dist-tls/db_dump185.lo
-/bin/sh libtool --tag=LD --mode=link %{__cc} -o dist/dist-tls/db_dump185 dist/dist-tls/db_dump185.lo db.1.85/PORT/%{_os}/libdb.a
+/bin/sh libtool --tag=LD --mode=link %{__cc} -o dist/dist-tls/db_dump185 %{__global_ldflags} dist/dist-tls/db_dump185.lo db.1.85/PORT/%{_os}/libdb.a
 
 # update gnu-config files for aarch64
 cp /usr/lib/rpm/redhat/config.guess dist
@@ -447,8 +453,18 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdb_java.so
 
 %changelog
-* Mon Dec 18 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-21
-- Fix deadlocks when reading/writing off-page duplicate tree (#1526929)
+* Thu Jan 11 2018 Matej Mužila <mmuzila@redhat.com> - 5.3.21-24
+- Link db_dump185 with %{__global_ldflags}. Resolves: rhbz#1460077
+
+* Tue Dec 19 2017 Matej Mužila <mmuzila@redhat.com> - 5.3.21-23
+- Mention in man page that care should be taken when running db_hotbackup
+  with -c option. Resolves: rhbz#1460077
+
+* Tue Oct 31 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-22
+- Fix deadlocks when reading/writing off-page duplicate tree (#1349779)
+
+* Thu Sep 07 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-21
+- Fail properly when encountering removed or 0-byte regions (#1471011)
 
 * Mon Mar 20 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-20
 - Add man pages for libdb-utils (#1395665)

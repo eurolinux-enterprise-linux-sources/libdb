@@ -1,0 +1,17 @@
+--- db-5.3.21/man/db_hotbackup.1.different_user	2017-12-04 13:33:45.608125447 +0100
++++ db-5.3.21/man/db_hotbackup.1	2017-12-04 13:46:37.631766387 +0100
+@@ -55,6 +55,14 @@ Before performing the snapshot, checkpoi
+ and remove any log files that are no longer required in that environment.
+ \fBTo avoid making catastrophic failure impossible, log file removal
+ must be integrated with log file archival.\fR
++.RS
++.PP
++Care should be taken with the \fB\-c\fR option, where the \fBdb_hotbackup\fR
++MUST be run by the same user that owns the database. If \fBdb_hotbackup\fR
++is run by a user different to the owner of the database, a new log file owned
++by this user might be created, making it impossible to use the database for its
++owner.
++.RE
+ .TP
+ \fB\-D\fR
+ Use the data and log directories listed in a \fBDB_CONFIG\fR configuration file
