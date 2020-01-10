@@ -4,9 +4,11 @@
 Summary: The Berkeley DB database library for C
 Name: libdb
 Version: 5.3.21
-Release: 19%{?dist}
+Release: 20%{?dist}
 Source0: http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 Source1: http://download.oracle.com/berkeley-db/db.1.85.tar.gz
+# libdb man pages generated from the 5.3.21 documentation
+Source2: libdb-5.3.21-manpages.tar.gz
 Patch0: libdb-multiarch.patch
 # db-1.85 upstream patches
 Patch10: http://www.oracle.com/technology/products/berkeley-db/db/update/1.85/patch.1.1
@@ -26,6 +28,7 @@ Patch26: signed-overflow.patch
 Patch27: libdb-cbd-race.patch
 # Limit concurrency to max 1024 CPUs
 Patch28: libdb-limit-cpu.patch
+Patch29: libdb-5.3.21-mutex_leak.patch
 URL: http://www.oracle.com/database/berkeley-db/
 License: BSD and LGPLv2 and Sleepycat
 Group: System Environment/Libraries
@@ -208,6 +211,7 @@ for building programs which use the Berkeley DB in Java.
 
 %prep
 %setup -q -n db-%{version} -a 1
+tar -xf %{SOURCE2}
 
 %patch0 -p1 -b .multiarch
 pushd db.1.85/PORT/linux
@@ -227,6 +231,7 @@ popd
 %patch26 -p1 -b .overflow
 %patch27 -p1 -b .cbdrace
 %patch28 -p1 -b .cpu-limit
+%patch29 -p1 -b .mutex-leak
 
 cd dist
 ./s_config
@@ -287,6 +292,7 @@ popd
 rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}%{_includedir}
 mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
+mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
 
 # Force off stripping of installed binaries
 %makeinstall STRIP=/bin/true -C dist/dist-tls
@@ -327,6 +333,7 @@ rm -rf docs/csharp
 rm -rf examples/csharp
 rm -rf docs/installation
 mv examples docs
+mv man/* ${RPM_BUILD_ROOT}%{_mandir}/man1
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -393,6 +400,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/db*_upgrade
 %{_bindir}/db*_verify
 %{_bindir}/db*_tuner
+%{_mandir}/man1/db_*
 
 %files cxx
 %defattr(-,root,root,-)
@@ -435,6 +443,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdb_java.so
 
 %changelog
+* Mon Mar 20 2017 Petr Kubat <pkubat@redhat.com> 5.3.21-20
+- Add man pages for libdb-utils (#1395665)
+
+* Wed Dec 14 2016 Petr Kubat <pkubat@redhat.com> - 5.3.21-20
+- Fix mutexes not being released properly (#1277887)
+
 * Thu Sep 03 2015 Jan Stanek <jstanek@redhat.com> - 5.3.21-19
 - Add patch to workaround issues on large systems (>1024 CPU)
   Resolves: #1245410
