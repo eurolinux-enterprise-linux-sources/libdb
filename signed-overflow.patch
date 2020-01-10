@@ -1,0 +1,25 @@
+diff -up db-5.3.21/lang/sql/generated/sqlite3.c.broken db-5.3.21/lang/sql/generated/sqlite3.c
+--- db-5.3.21/lang/sql/generated/sqlite3.c.broken	2013-11-05 15:47:30.503756426 +0100
++++ db-5.3.21/lang/sql/generated/sqlite3.c	2013-11-05 15:48:11.105888357 +0100
+@@ -8230,7 +8230,7 @@ SQLITE_PRIVATE int sqlite3VdbeAddOp4(Vdb
+ SQLITE_PRIVATE int sqlite3VdbeAddOp4Int(Vdbe*,int,int,int,int,int);
+ SQLITE_PRIVATE int sqlite3VdbeAddOpList(Vdbe*, int nOp, VdbeOpList const *aOp);
+ SQLITE_PRIVATE void sqlite3VdbeChangeP1(Vdbe*, int addr, int P1);
+-SQLITE_PRIVATE void sqlite3VdbeChangeP2(Vdbe*, int addr, int P2);
++SQLITE_PRIVATE void sqlite3VdbeChangeP2(Vdbe*, u32 addr, int P2);
+ SQLITE_PRIVATE void sqlite3VdbeChangeP3(Vdbe*, int addr, int P3);
+ SQLITE_PRIVATE void sqlite3VdbeChangeP5(Vdbe*, u8 P5);
+ SQLITE_PRIVATE void sqlite3VdbeJumpHere(Vdbe*, int addr);
+@@ -48686,10 +48686,9 @@ SQLITE_PRIVATE void sqlite3VdbeChangeP1(
+ ** Change the value of the P2 operand for a specific instruction.
+ ** This routine is useful for setting a jump destination.
+ */
+-SQLITE_PRIVATE void sqlite3VdbeChangeP2(Vdbe *p, int addr, int val){
++SQLITE_PRIVATE void sqlite3VdbeChangeP2(Vdbe *p, u32 addr, int val){
+   assert( p!=0 );
+-  assert( addr>=0 );
+-  if( p->nOp>addr ){
++  if( ((u32)p->nOp)>addr ){
+     p->aOp[addr].p2 = val;
+   }
+ }
